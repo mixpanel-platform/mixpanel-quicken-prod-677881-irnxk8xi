@@ -126,7 +126,7 @@
 	          var sessionStartCount = sessionStart.sum().values()['Session Start']
 	          var userCount = users.sum().values()['Session Start'];
 	          debugger
-	          var Revenue = MP.Data.inst(revenue.values())
+	          var Revenue = MP.Data.inst({ Purchases: revenue.values() } )
 	          console.log(Revenue);
 	          
 	         // var  = revenue.values();
