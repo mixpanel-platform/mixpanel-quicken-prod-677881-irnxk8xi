@@ -139,7 +139,7 @@
 			      $('#conversionRate p').text(conversionRate+'%');
 
 			      
-			       $("#revenue p").text('$' + Revenue.sum().values().toFixed(2));
+			       $("#revenue p").text('$' + Revenue.sum().values()['Purchases'].toFixed(2));
 			      //debugger
 			     	console.log(sessionStart.values())
 			      eventGraph.MPChart('setData', sessionStart);
