@@ -1,15 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
+    <style type="text/css">
+		body {
+		  font-family:"helvetica neue",helvetica;font:12px/18px;
+		}
+		#dateSelect{
+		  margin:10px;
+		}
+		.metrics{
+		  margin-left:25px;
+		  padding-top:10px;
+		}
+		.metric{
+			border:1px solid #ccc;
+			padding:15px 0;
+			margin:0 10px;
+			width:164px;
+			float:left;
+			text-align:center;
+		}
+		
+		.charts{
+		   margin:0 35px;
+		}
+		
+		.dataTable{
+		  margin:35px;
+		}
+		
+		h2{
+		  margin-top:15px;
+		  font-weight:normal;
+		  font-size:24px;
+		  margin-left:10px;
+		}
+	</style>
   </head>
-  <body class="mixpanel-platform-body">
-    <h1>Hello, World!</h1>
+  <body>
+    <div class="mixpanel-platform-section">
+      <h2 style="float: left;">Executive Report</h2>
+      <div id="dateSelect" style="float: right;"></div>
+      <div style="clear: both;"></div>
+    </div>
+    <div class="metrics">
+	    <div id="users" class="metric"><h3>Users</h3><p>XX</p></div>
+	    <div id="sessions" class="metric"><h3>Sessions</h3><p>XX</p></div>
+	    <div id="transactions" class="metric"><h3>Transasctions</h3><p>XX</p></div>
+	    <div id="conversionRate" class="metric"><h3>Conversion Rate</h3><p>XX</p></div>
+	    <div id="revenue" class="metric last"><h3>Revenue</h3><p>XX</p></div>
+	    <div style="clear: both;"></div>
+    </div>
+     <br>
+     <div class="charts">
+      <div class="block1" style="width:48%; float:left">
+        <div id="graph"></div>
+      </div>
+      <div class="block2" style="width:48%; float:right">
+       <div id="graph2"></div>
+    	</div>
+    	<div style="clear: both;"></div>
+    	</div>
+    	  <div class="dataTable">
+    	    <div id="table"></div>
+    	  </div>
+    	  <div class="dataTable">
+    	    <div id="table2"></div>
+    	  </div>
+    	 
     <script>
-      // Run queries and display results here
+    // MP.api.ready(function() {
+      var dateSelect  = $('#dateSelect').MPDatepicker();
+      var eventGraph  = $('#graph').MPChart({chartType: 'line'});
+      var eventGraph2  = $('#graph2').MPChart({chartType: 'line'});
+       
+       var eventTable  = $('#table').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Product'
+      });
+      
+      var eventTable2  = $('#table2').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Revenue'
+      });
+
+       var runQuery = function() {
+          var dateRange = dateSelect.MPDatepicker('value');
+          
+          var params = {
+            from: dateRange.from.toISOString().split('T')[0],
+	          to: dateRange.to.toISOString().split('T')[0],
+	          unit: 'day'
+          }
+          
+          var paramsTrans = {
+            from: dateRange.from.toISOString().split('T')[0],
+	          to: dateRange.to.toISOString().split('T')[0],
+	          unit: 'day',
+	          on: 'number(properties["purchase price"])',
+	          'method': 'sum', 
+          }
+          
+          var paramsUnique = {
+            from: dateRange.from.toISOString().split('T')[0],
+	          to: dateRange.to.toISOString().split('T')[0],
+	          unit: 'day',
+	          type: 'unique',
+          }
+          
+          var transactionCount, sessionStartCount;
+          
+          var users = MP.api.segment('Session Start', paramsUnique);
+          var sessionStart = MP.api.segment('Session Start', params);
+          var transactions = MP.api.segment('Transaction', params);
+         // var revenue = MP.api.query('api/2.0/segmentation/sum', paramsTrans);
+          var revenue = MP.api.segment('Transaction', paramsTrans);
+          
+          var productData = MP.api.segment('Transaction', 'product edition', params);
+          
+          $.when(users, sessionStart, transactions, productData, revenue).done(function(users, sessionStart, transactions, productData, Revenue) {
+	          var transactionCount = transactions.sum().values()['Transaction']
+	          var sessionStartCount = sessionStart.sum().values()['Session Start']
+	          var userCount = users.sum().values()['Session Start'];
+	          var Revenue = {revenue.sum().values()};
+	          console.log(Revenue);
+	          debugger
+	         // var  = revenue.values();
+	          
+	          $("#users p").text(userCount);
+	          $("#sessions p").text(sessionStartCount);
+	          $("#transactions p").text(transactionCount);
+	           
+			      var conversionRate = parseFloat((transactionCount/sessionStartCount) * 100).toFixed(2); 
+			      $('#conversionRate p').text(conversionRate+'%');
+
+			      
+			       $("#revenue p").text('$' + revenue.sum().values().toFixed(2));
+			      //debugger
+			      
+			      console.log(revData);
+			      console.log(sessionStart.values())
+			      eventGraph.MPChart('setData', sessionStart.values());
+			      //eventGraph2.MPChart('setData', revenue.values());
+			      eventTable.MPTable('setData', productData.values());
+			      //eventTable2.MPTable('setData', revData.values());
+          })
+          
+         }
+       
+       
+       dateSelect.on('change', runQuery);
+     
+     
     </script>
   </body>
 </html>
