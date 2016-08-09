@@ -121,7 +121,7 @@
           
           var productData = MP.api.segment('Transaction', 'product edition', params);
           
-          $.when(users, sessionStart, transactions, productData, revenue).done(function(users, sessionStart, transactions, productData, Revenue) {
+          $.when(users, sessionStart, transactions, productData, revenue).done(function(users, sessionStart, transactions, productData, revenue) {
 	          var transactionCount = transactions.sum().values()['Transaction']
 	          var sessionStartCount = sessionStart.sum().values()['Session Start']
 	          var userCount = users.sum().values()['Session Start'];
